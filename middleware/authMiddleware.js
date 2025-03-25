@@ -1,46 +1,28 @@
-const jwt = require("jsonwebtoken");
-const User = require("../models/users");
+const jwt = require('jsonwebtoken');
 
-exports.protect = async (req, res, next) => {
-  let token;
+exports.verifyToken = (req, res, next) => {
+  const authHeader = req.header('Authorization');
+  
+  if (!authHeader) {
+      return res.status(401).json({ message: 'Token tidak ditemukan' });
+  }
 
-  // Cek apakah ada token dalam header Authorization
-  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-    try {
-      token = req.headers.authorization.split(" ")[1]; // Ambil token tanpa "Bearer"
+  // Ambil token setelah "Bearer "
+  const token = authHeader.replace('Bearer ', '');
 
-      // Pastikan JWT_SECRET tersedia
-      if (!process.env.JWT_SECRET) {
-        console.error("❌ JWT_SECRET tidak ditemukan di .env");
-        return res.status(500).json({ message: "Server error: JWT_SECRET tidak ditemukan" });
-      }
-
-      // Verifikasi token
+  try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log("✅ Token terverifikasi:", decoded);
-
-      // Ambil user dari database tanpa password
-      req.user = await User.findById(decoded.id).select("-password");
-
-      if (!req.user) {
-        return res.status(401).json({ message: "User tidak ditemukan" });
-      }
-
+      req.user = decoded;
       next();
-    } catch (error) {
-      console.error("❌ Error verifikasi token:", error.message);
-      return res.status(401).json({ message: "Token tidak valid" });
-    }
-  } else {
-    return res.status(401).json({ message: "Tidak ada token, akses ditolak" });
+  } catch (error) {
+      console.error("JWT Error:", error.message); // Log ke terminal
+      res.status(401).json({ message: 'Token tidak valid', error: error.message });
   }
 };
 
-// Middleware untuk Admin
-exports.admin = (req, res, next) => {
-  if (req.user && req.user.role === "admin") {
+exports.verifyRole = (role) => (req, res, next) => {
+    if (req.user.role !== role) {
+        return res.status(403).json({ message: 'Akses ditolak, tidak memiliki izin' });
+    }
     next();
-  } else {
-    res.status(403).json({ message: "Akses ditolak, hanya untuk admin" });
-  }
 };

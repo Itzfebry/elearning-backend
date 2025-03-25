@@ -13,8 +13,11 @@ const tugasGurusRoutes = require("./routes/tugas_gurusRoutes");
 const tugasSiswasRoutes = require("./routes/tugas_siswasRoutes");
 const kelasRoutes = require("./routes/kelasRoutes");
 const diskusiRoutes = require("./routes/diskusisRoutes"); // Tambahkan routes diskusi
-
+const kelasmatapelajaranRoutes = require("./routes/kelasmatapelajaransRoutes");
+const authRoutes = require("./routes/authRoutes");
 const app = express();
+
+
 app.use(cors());
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
@@ -40,6 +43,7 @@ connectDB(); // Jalankan koneksi database
 
 // Gunakan Routes
 app.use("/users", userRoutes);
+app.use('/auth', authRoutes);
 app.use("/matapelajarans", mataPelajaransRoutes);
 app.use("/materis", materiRoutes);
 app.use("/videos", videoRoutes);
@@ -47,6 +51,7 @@ app.use("/tugas-gurus", tugasGurusRoutes);
 app.use("/tugas-siswas", tugasSiswasRoutes);
 app.use("/kelas", kelasRoutes);
 app.use("/diskusi", diskusiRoutes); // Tambahkan route diskusi
+app.use("/kelasmatapelajarans", kelasmatapelajaranRoutes);
 
 // Jalankan Server
 const PORT = process.env.PORT || 5000;
