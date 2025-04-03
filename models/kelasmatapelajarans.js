@@ -6,20 +6,20 @@ const kelasMataPelajaranSchema = new mongoose.Schema({
   guru_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
 }, { collection: 'kelas_matapelajarans', timestamps: true });
 
-// Virtual field untuk menghitung jumlah materi terkait
 kelasMataPelajaranSchema.virtual('materiCount', {
   ref: 'Materi',
   localField: '_id',
   foreignField: 'kelas_matapelajaran_id',
-  count: true
+  count: true,
+  default: 0,  // Ensure it never returns null
 });
 
-// Virtual field untuk menghitung jumlah video terkait
 kelasMataPelajaranSchema.virtual('videoCount', {
   ref: 'Video',
   localField: '_id',
   foreignField: 'kelas_matapelajaran_id',
-  count: true
+  count: true,
+  default: 0,  // Ensure it never returns null
 });
 
 module.exports = mongoose.model('KelasMataPelajaran', kelasMataPelajaranSchema);

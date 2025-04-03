@@ -22,14 +22,14 @@ exports.login = async (req, res) => {
     
     const user = await User.findOne(query);
     if (!user) {
-      return res.status(400).json({ message: 'User tidak ditemukan' });
+      return res.status(404).json({ message: 'User tidak ditemukan' });
     }
 
     console.log("Data User dari DB:", user); // Debug data user dari database
 
     if (user.password !== password) {
       console.log("Password Salah: Input =", password, ", DB =", user.password);
-      return res.status(400).json({ message: 'Password salah' });
+      return res.status(401).json({ message: 'Password salah' });
     }
 
     const token = jwt.sign(
@@ -40,7 +40,11 @@ exports.login = async (req, res) => {
 
     res.json({
       message: 'Login berhasil',
-      user: { id: user._id, role: user.role, nama: user.nama },
+      user: { 
+        id: user._id, 
+        role: user.role, 
+        nama: user.nama 
+      },
       token
     });
 
@@ -49,16 +53,25 @@ exports.login = async (req, res) => {
     res.status(500).json({ message: 'Terjadi kesalahan server' });
   }
 };
+
 exports.getMe = async (req, res) => {
     try {
         if (!req.user) {
             return res.status(401).json({ message: 'User tidak ditemukan' });
         }
 
+        // Fetch the latest user data from database
+        const user = await User.findById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User tidak ditemukan di database' });
+        }
+
         res.json({
-            id: req.user.id,
-            role: req.user.role,
-            nama: req.user.nama,
+            id: user._id,
+            role: user.role,
+            nama: user.nama,
+            email: user.email,
+            nis: user.nis
         });
     } catch (error) {
         console.error('getMe Error:', error);
